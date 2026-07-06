@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}ThirdEye | Sports Analytics{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <p class="eyebrow">Computer vision for football analysis</p>
+        <h1>ThirdEye</h1>
+        <p class="hero-copy">
+            Browse football analytics services for coaches, academies, scouts, and analysts.
+        </p>
+        <form class="hero-search" action="{% url 'catalogue:service_list' %}" method="get">
+            <label for="home-search">Search services</label>
+            <div class="search-row">
+                <input id="home-search" type="search" name="q" placeholder="Player tracking, heatmap, scouting">
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="analysis-visual" aria-hidden="true">
+        <div class="pitch-line halfway"></div>
+        <div class="pitch-box left-box"></div>
+        <div class="pitch-box right-box"></div>
+        <span class="player-dot dot-a"></span>
+        <span class="player-dot dot-b"></span>
+        <span class="player-dot dot-c"></span>
+        <span class="player-dot dot-d"></span>
+        <span class="tracking-line line-a"></span>
+        <span class="tracking-line line-b"></span>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-heading">
+        <p class="eyebrow">Catalogue</p>
+        <h2>Browse by category</h2>
+    </div>
+    <div class="category-grid">
+        {% for category in categories %}
+            <article class="category-card">
+                <h3>{{ category.name }}</h3>
+                <p>{{ category.description }}</p>
+                <a href="{% url 'catalogue:service_list' %}?category={{ category.slug }}">View services</a>
+            </article>
+        {% empty %}
+            <p>No categories have been added yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section section-muted">
+    <div class="section-heading">
+        <p class="eyebrow">Featured</p>
+        <h2>Popular analysis packages</h2>
+    </div>
+    <div class="service-grid">
+        {% for service in featured_services %}
+            {% include "catalogue/partials/service_card.html" %}
+        {% empty %}
+            <p>No featured services have been added yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Services | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Service catalogue</p>
+    <h1>Football analytics services</h1>
+    <p>Search and filter ThirdEye packages by football analysis type, price, level, video type, delivery time, and output format.</p>
+</section>
+
+<section class="catalogue-layout">
+    <aside class="filter-panel">
+        <h2>Filters</h2>
+        <form method="get">
+            <label for="q">Service name</label>
+            <input id="q" type="search" name="q" value="{{ filters.q }}" placeholder="Search by name">
+
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if filters.category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="subcategory">Sub-category</label>
+            <select id="subcategory" name="subcategory">
+                <option value="">All sub-categories</option>
+                {% for subcategory in subcategories %}
+                    <option value="{{ subcategory.slug }}" {% if filters.subcategory == subcategory.slug %}selected{% endif %}>{{ subcategory.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="analysis_type">Analysis type</label>
+            <select id="analysis_type" name="analysis_type">
+                <option value="">All analysis types</option>
+                {% for value, label in analysis_type_choices %}
+                    <option value="{{ value }}" {% if filters.analysis_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="two-column-fields">
+                <div>
+                    <label for="min_price">Min price</label>
+                    <input id="min_price" type="number" name="min_price" value="{{ filters.min_price }}" min="0" step="1">
+                </div>
+                <div>
+                    <label for="max_price">Max price</label>
+                    <input id="max_price" type="number" name="max_price" value="{{ filters.max_price }}" min="0" step="1">
+                </div>
+            </div>
+
+            <label for="skill_level">Skill level</label>
+            <select id="skill_level" name="skill_level">
+                <option value="">All levels</option>
+                {% for value, label in skill_level_choices %}
+                    <option value="{{ value }}" {% if filters.skill_level == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="video_type">Video type</label>
+            <select id="video_type" name="video_type">
+                <option value="">All video types</option>
+                {% for value, label in video_type_choices %}
+                    <option value="{{ value }}" {% if filters.video_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="delivery_time">Delivery time</label>
+            <select id="delivery_time" name="delivery_time">
+                <option value="">Any delivery time</option>
+                {% for value, label in delivery_time_choices %}
+                    <option value="{{ value }}" {% if filters.delivery_time == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="output_format">Output format</label>
+            <select id="output_format" name="output_format">
+                <option value="">Any output format</option>
+                {% for value, label in output_format_choices %}
+                    <option value="{{ value }}" {% if filters.output_format == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Apply filters</button>
+            <a class="text-link" href="{% url 'catalogue:service_list' %}">Clear filters</a>
+        </form>
+    </aside>
+
+    <div class="catalogue-results">
+        <div class="results-heading">
+            <h2>{{ services|length }} service{{ services|length|pluralize }}</h2>
+        </div>
+        <div class="service-grid">
+            {% for service in services %}
+                {% include "catalogue/partials/service_card.html" %}
+            {% empty %}
+                <div class="empty-state">
+                    <h3>No services found</h3>
+                    <p>Try changing the search text or removing one of the filters.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
