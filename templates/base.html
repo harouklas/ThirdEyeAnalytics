@@ -14,12 +14,31 @@
             <div class="nav-links">
                 <a href="{% url 'home' %}">Home</a>
                 <a href="{% url 'catalogue:service_list' %}">Services</a>
-                <a href="{% url 'admin:index' %}">Admin</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'accounts:management_dashboard' %}">Management</a>
+                    {% endif %}
+                    <form class="nav-logout" action="{% url 'accounts:logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                    <a href="{% url 'accounts:register' %}">Register</a>
+                {% endif %}
             </div>
         </nav>
     </header>
 
     <main>
+        {% if messages %}
+            <div class="message-list">
+                {% for message in messages %}
+                    <p class="message {{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

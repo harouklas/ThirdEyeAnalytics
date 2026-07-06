@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Management | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>Management</h1>
+    <p>This is the in-website staff dashboard. Django Admin is separate and can be opened manually at /django-admin/.</p>
+</section>
+
+<section class="management-grid">
+    <article class="stat-card">
+        <span>{{ stats.services }}</span>
+        <p>Services</p>
+    </article>
+    <article class="stat-card">
+        <span>{{ stats.categories }}</span>
+        <p>Categories</p>
+    </article>
+    <article class="stat-card">
+        <span>{{ stats.users }}</span>
+        <p>Users</p>
+    </article>
+    <article class="stat-card">
+        <span>{{ stats.orders }}</span>
+        <p>Orders</p>
+    </article>
+    <article class="stat-card">
+        <span>{{ stats.ratings }}</span>
+        <p>Ratings</p>
+    </article>
+</section>
+
+<section class="dashboard-layout">
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Latest services</h2>
+            <a href="{% url 'catalogue:service_list' %}">View catalogue</a>
+        </div>
+        <div class="simple-list">
+            {% for service in latest_services %}
+                <a href="{% url 'catalogue:service_detail' service.slug %}">
+                    <span>{{ service.name }}</span>
+                    <small>{{ service.category.name }} - ${{ service.price }}</small>
+                </a>
+            {% empty %}
+                <p>No services yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Latest orders</h2>
+        </div>
+        <div class="simple-list">
+            {% for order in latest_orders %}
+                <p>Order #{{ order.id }} by {{ order.user.username }} - ${{ order.total_price }}</p>
+            {% empty %}
+                <p>No simulated orders yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

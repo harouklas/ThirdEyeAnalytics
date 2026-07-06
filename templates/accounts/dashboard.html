@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Dashboard</p>
+    <h1>Welcome, {{ profile.full_name }}</h1>
+    <p>View your profile information and recent activity on the ThirdEye platform.</p>
+</section>
+
+<section class="dashboard-layout">
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Profile</h2>
+            <a href="{% url 'accounts:profile_edit' %}">Edit profile</a>
+        </div>
+        <dl class="profile-list">
+            <div>
+                <dt>Username</dt>
+                <dd>{{ user.username }}</dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd>{{ user.email }}</dd>
+            </div>
+            <div>
+                <dt>Organization</dt>
+                <dd>{{ profile.organization|default:"Not provided" }}</dd>
+            </div>
+            <div>
+                <dt>Role</dt>
+                <dd>{{ profile.get_sport_role_display }}</dd>
+            </div>
+            <div>
+                <dt>Favorite analysis</dt>
+                <dd>{{ profile.favorite_analysis_type|default:"Not provided" }}</dd>
+            </div>
+        </dl>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Recently viewed</h2>
+            <a href="{% url 'catalogue:service_list' %}">Browse more</a>
+        </div>
+        <div class="simple-list">
+            {% for item in recent_views %}
+                <a href="{% url 'catalogue:service_detail' item.service.slug %}">
+                    <span>{{ item.service.name }}</span>
+                    <small>{{ item.service.category.name }}</small>
+                </a>
+            {% empty %}
+                <p>No recently viewed services yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Wishlist</h2>
+        </div>
+        <div class="simple-list">
+            {% for item in wishlist_items %}
+                <a href="{% url 'catalogue:service_detail' item.service.slug %}">
+                    <span>{{ item.service.name }}</span>
+                    <small>{{ item.service.category.name }}</small>
+                </a>
+            {% empty %}
+                <p>No wishlist items yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Orders</h2>
+        </div>
+        <div class="simple-list">
+            {% for order in recent_orders %}
+                <p>Order #{{ order.id }} - ${{ order.total_price }} - {{ order.get_status_display }}</p>
+            {% empty %}
+                <p>No simulated purchases yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

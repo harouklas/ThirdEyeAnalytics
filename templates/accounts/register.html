@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Register | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <p class="eyebrow">Create account</p>
+        <h1>Join ThirdEye</h1>
+        <p>Register to save services, view your dashboard, and use member-only features later.</p>
+
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit">Create account</button>
+        </form>
+
+        <p class="auth-switch">
+            Already have an account?
+            <a href="{% url 'accounts:login' %}">Login</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
