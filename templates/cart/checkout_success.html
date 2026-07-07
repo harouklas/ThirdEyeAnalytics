@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout Complete | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Simulated purchase</p>
+    <h1>Checkout complete</h1>
+    <p>Order #{{ order.id }} has been saved as a simulated purchase.</p>
+</section>
+
+<section class="cart-layout">
+    <div class="cart-panel">
+        {% for item in order.items.all %}
+            <article class="cart-item">
+                <div>
+                    <p class="service-meta">Purchased service</p>
+                    <h2>{{ item.service_name }}</h2>
+                    <p>Quantity: {{ item.quantity }}</p>
+                </div>
+                <div class="cart-item-summary">
+                    <p>Price: ${{ item.price }}</p>
+                    <p>Line total: ${{ item.line_total }}</p>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+    <aside class="cart-summary">
+        <h2>Order summary</h2>
+        <p class="price">${{ order.total_price }}</p>
+        <p>Status: {{ order.get_status_display }}</p>
+        <a class="button-link" href="{% url 'accounts:dashboard' %}">View dashboard</a>
+    </aside>
+</section>
+{% endblock %}

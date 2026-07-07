@@ -54,6 +54,11 @@
         <p class="price">${{ service.price }}</p>
         <div class="detail-actions">
             {% if user.is_authenticated %}
+                <form action="{% url 'cart:add_to_cart' service.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Add to cart</button>
+                </form>
+
                 <form class="wishlist-form" data-url="{% url 'interactions:toggle_wishlist' service.id %}" method="post">
                     {% csrf_token %}
                     <button id="wishlist-button" type="submit">

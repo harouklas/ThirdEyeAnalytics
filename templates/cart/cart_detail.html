@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Cart | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Shopping cart</p>
+    <h1>Your cart</h1>
+    <p>Review the selected analytics services before simulating checkout.</p>
+</section>
+
+<section class="cart-layout">
+    <div class="cart-panel">
+        {% for item in items %}
+            <article class="cart-item">
+                <div>
+                    <p class="service-meta">{{ item.service.category.name }}</p>
+                    <h2>{{ item.service.name }}</h2>
+                    <p>{{ item.service.short_description }}</p>
+                </div>
+                <div class="cart-item-summary">
+                    <p>Quantity: {{ item.quantity }}</p>
+                    <p>Line total: ${{ item.line_total }}</p>
+                    <form action="{% url 'cart:remove_from_cart' item.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="secondary-button">Remove</button>
+                    </form>
+                </div>
+            </article>
+        {% empty %}
+            <div class="empty-state">
+                <h2>Your cart is empty</h2>
+                <p>Add a ThirdEye service package from the catalogue.</p>
+                <a class="button-link" href="{% url 'catalogue:service_list' %}">Browse services</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <aside class="cart-summary">
+        <h2>Summary</h2>
+        <p class="price">${{ cart.total_price }}</p>
+        {% if items %}
+            <form action="{% url 'cart:checkout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Simulate checkout</button>
+            </form>
+        {% else %}
+            <a class="button-link" href="{% url 'catalogue:service_list' %}">Find services</a>
+        {% endif %}
+    </aside>
+</section>
+{% endblock %}
