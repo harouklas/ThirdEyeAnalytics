@@ -52,6 +52,37 @@
             {% endif %}
         </div>
         <p class="price">${{ service.price }}</p>
+        <div class="detail-actions">
+            {% if user.is_authenticated %}
+                <form class="wishlist-form" data-url="{% url 'interactions:toggle_wishlist' service.id %}" method="post">
+                    {% csrf_token %}
+                    <button id="wishlist-button" type="submit">
+                        {% if in_wishlist %}Remove from wishlist{% else %}Add to wishlist{% endif %}
+                    </button>
+                </form>
+
+                <div class="rating-panel">
+                    <p>
+                        Average rating:
+                        <strong><span id="average-rating">{{ average_rating }}</span>/5</strong>
+                        (<span id="rating-count">{{ rating_count }}</span>)
+                    </p>
+                    <form class="rating-form" data-url="{% url 'interactions:rate_service' service.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="button" class="rating-button {% if user_rating.score == 1 %}selected{% endif %}" data-score="1">1</button>
+                        <button type="button" class="rating-button {% if user_rating.score == 2 %}selected{% endif %}" data-score="2">2</button>
+                        <button type="button" class="rating-button {% if user_rating.score == 3 %}selected{% endif %}" data-score="3">3</button>
+                        <button type="button" class="rating-button {% if user_rating.score == 4 %}selected{% endif %}" data-score="4">4</button>
+                        <button type="button" class="rating-button {% if user_rating.score == 5 %}selected{% endif %}" data-score="5">5</button>
+                    </form>
+                    <p id="rating-message" class="inline-message"></p>
+                </div>
+            {% else %}
+                <p class="login-note">
+                    <a href="{% url 'accounts:login' %}">Login</a> to save this service or rate it.
+                </p>
+            {% endif %}
+        </div>
         <a class="button-link" href="{% url 'catalogue:service_list' %}?analysis_type={{ service.analysis_type }}">More {{ service.get_analysis_type_display }} services</a>
     </aside>
 </section>
@@ -69,4 +100,39 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+if (window.jQuery) {
+    $(function () {
+        $(".wishlist-form").on("submit", function (event) {
+            event.preventDefault();
+
+            const form = $(this);
+            const button = $("#wishlist-button");
+
+            $.post(form.data("url"), form.serialize(), function (data) {
+                button.text(data.in_wishlist ? "Remove from wishlist" : "Add to wishlist");
+            });
+        });
+
+        $(".rating-button").on("click", function () {
+            const button = $(this);
+            const form = button.closest(".rating-form");
+            const score = button.data("score");
+            const postData = form.serialize() + "&score=" + score;
+
+            $.post(form.data("url"), postData, function (data) {
+                $(".rating-button").removeClass("selected");
+                button.addClass("selected");
+                $("#average-rating").text(data.average_rating);
+                $("#rating-count").text(data.rating_count);
+                $("#rating-message").text("Your rating has been saved.");
+            });
+        });
+    });
+}
+</script>
 {% endblock %}

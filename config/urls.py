@@ -25,6 +25,7 @@ urlpatterns = [
     path('', core_views.home, name='home'),
     path('', include('catalogue.urls')),
     path('', include('accounts.urls')),
+    path('', include('interactions.urls')),
     path('django-admin/', admin.site.urls),
 ]
 

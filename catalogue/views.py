@@ -1,9 +1,9 @@
 from decimal import Decimal, InvalidOperation
 
-from django.db.models import Q
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404, render
 
-from interactions.models import RecentlyViewedService
+from interactions.models import Rating, RecentlyViewedService, WishlistItem
 
 from .models import Category, Service, SubCategory
 
@@ -98,11 +98,23 @@ def service_detail(request, slug):
         is_active=True,
     )
 
+    user_rating = None
+    in_wishlist = False
+
     if request.user.is_authenticated:
         RecentlyViewedService.objects.update_or_create(
             user=request.user,
             service=service,
         )
+        user_rating = Rating.objects.filter(user=request.user, service=service).first()
+        in_wishlist = WishlistItem.objects.filter(
+            user=request.user,
+            service=service,
+        ).exists()
+
+    rating_summary = service.ratings.aggregate(average=Avg("score"))
+    average_rating = rating_summary["average"] or 0
+    rating_count = service.ratings.count()
 
     recommended_services = (
         Service.objects.filter(
@@ -120,5 +132,9 @@ def service_detail(request, slug):
         {
             "service": service,
             "recommended_services": recommended_services,
+            "average_rating": round(average_rating, 1),
+            "rating_count": rating_count,
+            "user_rating": user_rating,
+            "in_wishlist": in_wishlist,
         },
     )
