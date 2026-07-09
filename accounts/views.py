@@ -1,19 +1,39 @@
+from functools import wraps
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from cart.models import Order
-from catalogue.models import Category, Service
+from catalogue.forms import (
+    CategoryManagementForm,
+    ServiceManagementForm,
+    SubCategoryManagementForm,
+)
+from catalogue.models import Category, Service, SubCategory
+from catalogue.recommendations import get_dashboard_recommendations
 from interactions.models import Rating, RecentlyViewedService, WishlistItem
 
 from .forms import ProfileForm, RegistrationForm
 from .models import Profile
 
 User = get_user_model()
+
+
+def staff_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Only staff users can open the management area.")
+            return redirect("accounts:dashboard")
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 class UserLoginView(LoginView):
@@ -76,6 +96,7 @@ def dashboard(request):
         .order_by("-created_at")[:5]
     )
     recent_orders = Order.objects.filter(user=request.user).order_by("-created_at")[:5]
+    recommended_services, latest_search = get_dashboard_recommendations(request.user)
 
     return render(
         request,
@@ -85,6 +106,8 @@ def dashboard(request):
             "recent_views": recent_views,
             "wishlist_items": wishlist_items,
             "recent_orders": recent_orders,
+            "recommended_services": recommended_services,
+            "latest_search": latest_search,
         },
     )
 
@@ -108,12 +131,8 @@ def profile_edit(request):
     return render(request, "accounts/profile_edit.html", {"form": form})
 
 
-@login_required
+@staff_required
 def management_dashboard(request):
-    if not request.user.is_staff:
-        messages.error(request, "Only staff users can open the management dashboard.")
-        return redirect("accounts:dashboard")
-
     stats = {
         "services": Service.objects.count(),
         "categories": Category.objects.count(),
@@ -133,3 +152,98 @@ def management_dashboard(request):
             "latest_orders": latest_orders,
         },
     )
+
+
+@staff_required
+def management_service_list(request):
+    services = Service.objects.select_related("category", "subcategory").order_by(
+        "category__name",
+        "name",
+    )
+    return render(request, "accounts/management_services.html", {"services": services})
+
+
+@staff_required
+def management_service_add(request):
+    if request.method == "POST":
+        form = ServiceManagementForm(request.POST, request.FILES)
+        if form.is_valid():
+            service = form.save()
+            messages.success(request, f"{service.name} has been added.")
+            return redirect("accounts:management_services")
+    else:
+        form = ServiceManagementForm()
+
+    return render(
+        request,
+        "accounts/management_service_form.html",
+        {
+            "form": form,
+            "page_title": "Add service",
+        },
+    )
+
+
+@staff_required
+def management_service_edit(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+
+    if request.method == "POST":
+        form = ServiceManagementForm(request.POST, request.FILES, instance=service)
+        if form.is_valid():
+            service = form.save()
+            messages.success(request, f"{service.name} has been updated.")
+            return redirect("accounts:management_services")
+    else:
+        form = ServiceManagementForm(instance=service)
+
+    return render(
+        request,
+        "accounts/management_service_form.html",
+        {
+            "form": form,
+            "page_title": "Edit service",
+            "service": service,
+        },
+    )
+
+
+@staff_required
+def management_categories(request):
+    category_form = CategoryManagementForm()
+    subcategory_form = SubCategoryManagementForm()
+
+    if request.method == "POST":
+        form_type = request.POST.get("form_type")
+
+        if form_type == "category":
+            category_form = CategoryManagementForm(request.POST)
+            if category_form.is_valid():
+                category = category_form.save()
+                messages.success(request, f"{category.name} category has been added.")
+                return redirect("accounts:management_categories")
+
+        if form_type == "subcategory":
+            subcategory_form = SubCategoryManagementForm(request.POST)
+            if subcategory_form.is_valid():
+                subcategory = subcategory_form.save()
+                messages.success(request, f"{subcategory.name} sub-category has been added.")
+                return redirect("accounts:management_categories")
+
+    categories = Category.objects.prefetch_related("subcategories").order_by("name")
+
+    return render(
+        request,
+        "accounts/management_categories.html",
+        {
+            "categories": categories,
+            "category_form": category_form,
+            "subcategory_form": subcategory_form,
+        },
+    )
+
+
+@staff_required
+def management_users(request):
+    users = User.objects.select_related("profile").order_by("username")
+    return render(request, "accounts/management_users.html", {"users": users})

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Services | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>Manage services</h1>
+    <p>Add and edit the ThirdEye service packages shown in the public catalogue.</p>
+</section>
+
+<section class="management-toolbar">
+    <a class="button-link" href="{% url 'accounts:management_service_add' %}">Add service</a>
+    <a class="text-link" href="{% url 'accounts:management_dashboard' %}">Back to management</a>
+</section>
+
+<section class="management-table">
+    <div class="management-row management-row-heading">
+        <span>Service</span>
+        <span>Category</span>
+        <span>Price</span>
+        <span>Status</span>
+        <span>Action</span>
+    </div>
+    {% for service in services %}
+        <div class="management-row">
+            <span>
+                <strong>{{ service.name }}</strong>
+                <small>{{ service.get_analysis_type_display }}</small>
+            </span>
+            <span>{{ service.category.name }} / {{ service.subcategory.name }}</span>
+            <span>${{ service.price }}</span>
+            <span>
+                {% if service.is_active %}Active{% else %}Hidden{% endif %}
+                {% if service.is_featured %} / Featured{% endif %}
+            </span>
+            <span>
+                <a href="{% url 'accounts:management_service_edit' service.id %}">Edit</a>
+            </span>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <h2>No services yet</h2>
+            <p>Add the first catalogue service.</p>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

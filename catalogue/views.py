@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404, render
 
-from interactions.models import Rating, RecentlyViewedService, WishlistItem
+from interactions.models import Rating, RecentlyViewedService, SearchHistory, WishlistItem
 
 from .models import Category, Service, SubCategory
 
@@ -25,6 +25,8 @@ def service_list(request):
     output_format = request.GET.get("output_format", "")
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
+    min_price_value = None
+    max_price_value = None
 
     if query:
         services = services.filter(
@@ -56,15 +58,35 @@ def service_list(request):
 
     if min_price:
         try:
-            services = services.filter(price__gte=Decimal(min_price))
+            min_price_value = Decimal(min_price)
+            services = services.filter(price__gte=min_price_value)
         except InvalidOperation:
             pass
 
     if max_price:
         try:
-            services = services.filter(price__lte=Decimal(max_price))
+            max_price_value = Decimal(max_price)
+            services = services.filter(price__lte=max_price_value)
         except InvalidOperation:
             pass
+
+    has_search_criteria = any(
+        [
+            query,
+            analysis_type,
+            min_price_value is not None,
+            max_price_value is not None,
+        ]
+    )
+
+    if request.user.is_authenticated and has_search_criteria:
+        SearchHistory.objects.create(
+            user=request.user,
+            query=query,
+            analysis_type=analysis_type,
+            min_price=min_price_value,
+            max_price=max_price_value,
+        )
 
     context = {
         "services": services,

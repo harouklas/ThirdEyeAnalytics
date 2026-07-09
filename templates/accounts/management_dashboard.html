@@ -32,11 +32,26 @@
     </article>
 </section>
 
+<section class="management-actions">
+    <a href="{% url 'accounts:management_services' %}">
+        <span>Manage services</span>
+        <small>Add, edit, activate, or feature catalogue services.</small>
+    </a>
+    <a href="{% url 'accounts:management_categories' %}">
+        <span>Manage categories</span>
+        <small>Add categories and sub-categories for browsing.</small>
+    </a>
+    <a href="{% url 'accounts:management_users' %}">
+        <span>View users</span>
+        <small>Review registered users and staff roles.</small>
+    </a>
+</section>
+
 <section class="dashboard-layout">
     <article class="dashboard-panel">
         <div class="panel-heading">
             <h2>Latest services</h2>
-            <a href="{% url 'catalogue:service_list' %}">View catalogue</a>
+            <a href="{% url 'accounts:management_services' %}">Manage services</a>
         </div>
         <div class="simple-list">
             {% for service in latest_services %}

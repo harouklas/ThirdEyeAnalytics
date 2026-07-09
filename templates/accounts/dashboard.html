@@ -58,6 +58,30 @@
 
     <article class="dashboard-panel">
         <div class="panel-heading">
+            <h2>Recommended services</h2>
+            <a href="{% url 'catalogue:service_list' %}">View all</a>
+        </div>
+        {% if latest_search %}
+            <p class="recommendation-note">
+                Based on your latest search:
+                {% if latest_search.query %}"{{ latest_search.query }}"{% endif %}
+                {% if latest_search.analysis_type %}{{ latest_search.analysis_type }}{% endif %}
+            </p>
+        {% endif %}
+        <div class="simple-list">
+            {% for service in recommended_services %}
+                <a href="{% url 'catalogue:service_detail' service.slug %}">
+                    <span>{{ service.name }}</span>
+                    <small>{{ service.category.name }} - {{ service.get_analysis_type_display }}</small>
+                </a>
+            {% empty %}
+                <p>No recommendations yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="dashboard-panel">
+        <div class="panel-heading">
             <h2>Wishlist</h2>
         </div>
         <div class="simple-list">

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Categories | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>Manage categories</h1>
+    <p>Create the categories and sub-categories used by the public catalogue filters.</p>
+</section>
+
+<section class="dashboard-layout">
+    <article class="dashboard-panel">
+        <div class="panel-heading">
+            <h2>Current categories</h2>
+            <a href="{% url 'accounts:management_dashboard' %}">Back</a>
+        </div>
+        <div class="simple-list">
+            {% for category in categories %}
+                <p>
+                    <strong>{{ category.name }}</strong>
+                    <small>
+                        {% for subcategory in category.subcategories.all %}
+                            {{ subcategory.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No sub-categories yet
+                        {% endfor %}
+                    </small>
+                </p>
+            {% empty %}
+                <p>No categories yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="dashboard-panel">
+        <h2>Add category</h2>
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="category">
+            {% for field in category_form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit">Add category</button>
+        </form>
+    </article>
+
+    <article class="dashboard-panel">
+        <h2>Add sub-category</h2>
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="subcategory">
+            {% for field in subcategory_form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit">Add sub-category</button>
+        </form>
+    </article>
+</section>
+{% endblock %}

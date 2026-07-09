@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>{{ page_title }}</h1>
+    <p>Use this form to manage one catalogue service. Leave the slug blank to generate it from the name.</p>
+</section>
+
+<section class="auth-page compact">
+    <div class="auth-card wide">
+        <form method="post" enctype="multipart/form-data" class="stacked-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit">Save service</button>
+            <a class="text-link" href="{% url 'accounts:management_services' %}">Back to services</a>
+        </form>
+    </div>
+</section>
+{% endblock %}

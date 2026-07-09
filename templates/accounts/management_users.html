@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>Users</h1>
+    <p>Review registered users and their current role in the application.</p>
+</section>
+
+<section class="management-toolbar">
+    <a class="text-link" href="{% url 'accounts:management_dashboard' %}">Back to management</a>
+</section>
+
+<section class="management-table users-table">
+    <div class="management-row management-row-heading">
+        <span>User</span>
+        <span>Email</span>
+        <span>Profile role</span>
+        <span>Access</span>
+    </div>
+    {% for user_obj in users %}
+        <div class="management-row">
+            <span>
+                <strong>{{ user_obj.username }}</strong>
+                <small>{{ user_obj.profile.full_name|default:"No profile name" }}</small>
+            </span>
+            <span>{{ user_obj.email|default:"No email" }}</span>
+            <span>{{ user_obj.profile.get_sport_role_display|default:"Not provided" }}</span>
+            <span>
+                {% if user_obj.is_superuser %}
+                    Superuser
+                {% elif user_obj.is_staff %}
+                    Staff
+                {% else %}
+                    User
+                {% endif %}
+            </span>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <h2>No users yet</h2>
+            <p>Registered users will appear here.</p>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}
