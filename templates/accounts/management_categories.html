@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{# This page lists categories and contains both category creation forms. #}
 
 {% block title %}Manage Categories | ThirdEye{% endblock %}
 
@@ -6,27 +7,42 @@
 <section class="page-header">
     <p class="eyebrow">Staff dashboard</p>
     <h1>Manage categories</h1>
-    <p>Create the categories and sub-categories used by the public catalogue filters.</p>
+    <p>Add, edit, or delete the categories and sub-categories used by the catalogue.</p>
 </section>
 
+{# Both forms post here, so form_type tells the view which one to validate. #}
 <section class="dashboard-layout">
     <article class="dashboard-panel">
         <div class="panel-heading">
             <h2>Current categories</h2>
             <a href="{% url 'accounts:management_dashboard' %}">Back</a>
         </div>
-        <div class="simple-list">
+        <div class="category-management-list">
             {% for category in categories %}
-                <p>
-                    <strong>{{ category.name }}</strong>
-                    <small>
+                <div class="category-management-item">
+                    <div class="category-management-heading">
+                        <strong>{{ category.name }}</strong>
+                        <span class="management-row-actions">
+                            <a href="{% url 'accounts:management_category_edit' category.id %}">Edit</a>
+                            <a class="danger-link" href="{% url 'accounts:management_category_delete' category.id %}">Delete</a>
+                        </span>
+                    </div>
+
+                    {# Each sub-category has its own edit and POST-confirmed delete action. #}
+                    <div class="subcategory-management-list">
                         {% for subcategory in category.subcategories.all %}
-                            {{ subcategory.name }}{% if not forloop.last %}, {% endif %}
+                            <div class="subcategory-management-item">
+                                <span>{{ subcategory.name }}</span>
+                                <span class="management-row-actions">
+                                    <a href="{% url 'accounts:management_subcategory_edit' subcategory.id %}">Edit</a>
+                                    <a class="danger-link" href="{% url 'accounts:management_subcategory_delete' subcategory.id %}">Delete</a>
+                                </span>
+                            </div>
                         {% empty %}
-                            No sub-categories yet
+                            <small>No sub-categories yet</small>
                         {% endfor %}
-                    </small>
-                </p>
+                    </div>
+                </div>
             {% empty %}
                 <p>No categories yet.</p>
             {% endfor %}

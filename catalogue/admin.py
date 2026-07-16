@@ -1,3 +1,5 @@
+"""Django admin configuration for catalogue models."""
+
 from django.contrib import admin
 
 from .models import Category, Service, SubCategory
@@ -20,6 +22,7 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
+    # Staff can scan, filter, and search the full service catalogue in Django Admin.
     list_display = [
         "name",
         "category",

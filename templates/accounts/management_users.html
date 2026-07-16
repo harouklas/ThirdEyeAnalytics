@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{# Staff view users here, but only a Head Administrator can change roles. #}
 
 {% block title %}Manage Users | ThirdEye{% endblock %}
 
 {% block content %}
 <section class="page-header">
-    <p class="eyebrow">Staff dashboard</p>
+    <p class="eyebrow">Administrator dashboard</p>
     <h1>Users</h1>
-    <p>Review registered users and their current role in the application.</p>
+    <p>Review registered users and their access role in the application.</p>
 </section>
 
 <section class="management-toolbar">
@@ -17,24 +18,35 @@
     <div class="management-row management-row-heading">
         <span>User</span>
         <span>Email</span>
-        <span>Profile role</span>
-        <span>Access</span>
+        <span>Sport role</span>
+        <span>Access role</span>
+        <span>Role management</span>
     </div>
     {% for user_obj in users %}
         <div class="management-row">
-            <span>
+            <span data-label="User">
                 <strong>{{ user_obj.username }}</strong>
                 <small>{{ user_obj.profile.full_name|default:"No profile name" }}</small>
             </span>
-            <span>{{ user_obj.email|default:"No email" }}</span>
-            <span>{{ user_obj.profile.get_sport_role_display|default:"Not provided" }}</span>
-            <span>
-                {% if user_obj.is_superuser %}
-                    Superuser
-                {% elif user_obj.is_staff %}
-                    Staff
+            <span data-label="Email">{{ user_obj.email|default:"No email" }}</span>
+            <span data-label="Sport role">{{ user_obj.profile.get_sport_role_display|default:"Not provided" }}</span>
+            <span data-label="Access role">{{ user_obj.profile.get_role_display }}</span>
+            <span data-label="Role management">
+{# The view checks this again. Hiding a form by itself is not security. #}
+                {% if user.is_superuser and user_obj != user %}
+                    <form class="inline-role-form" action="{% url 'accounts:management_user_role_update' user_obj.id %}" method="post">
+                        {% csrf_token %}
+                        <select name="role" aria-label="Role for {{ user_obj.username }}">
+                            {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if user_obj.profile.role == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                {% elif user_obj == user %}
+                    <small>Current account</small>
                 {% else %}
-                    User
+                    <small>Head Administrator only</small>
                 {% endif %}
             </span>
         </div>

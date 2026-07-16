@@ -1,3 +1,5 @@
+"""Django admin configuration for ratings, wishlist, views, and searches."""
+
 from django.contrib import admin
 
 from .models import Rating, RecentlyViewedService, SearchHistory, WishlistItem
@@ -5,6 +7,7 @@ from .models import Rating, RecentlyViewedService, SearchHistory, WishlistItem
 
 @admin.register(Rating)
 class RatingAdmin(admin.ModelAdmin):
+    # These columns and filters help staff review user feedback.
     list_display = ["user", "service", "score", "created_at"]
     list_filter = ["score", "created_at"]
     search_fields = ["user__username", "service__name", "comment"]

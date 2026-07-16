@@ -1,3 +1,5 @@
+"""Simple rule-based recommendations for the user dashboard."""
+
 from django.db.models import Q
 
 from interactions.models import RecentlyViewedService, SearchHistory, WishlistItem
@@ -6,9 +8,11 @@ from .models import Service
 
 
 def get_dashboard_recommendations(user, limit=4):
+    # SearchHistory is ordered newest first, so first() gives the latest search.
     latest_search = SearchHistory.objects.filter(user=user).first()
     recommendation_filter = Q()
 
+    # OR is used because matching either part should count as a recommendation.
     if latest_search:
         if latest_search.query:
             recommendation_filter |= (
@@ -19,6 +23,7 @@ def get_dashboard_recommendations(user, limit=4):
         if latest_search.analysis_type:
             recommendation_filter |= Q(analysis_type=latest_search.analysis_type)
 
+    # Views contribute category interests and wishlist items contribute analysis types.
     recent_category_ids = list(
         RecentlyViewedService.objects.filter(user=user).values_list(
             "service__category_id",
@@ -43,6 +48,7 @@ def get_dashboard_recommendations(user, limit=4):
         "subcategory",
     )
 
+    # New users receive featured services until they have activity to use.
     if recommendation_filter:
         services = services.filter(recommendation_filter)
     else:
@@ -54,6 +60,7 @@ def get_dashboard_recommendations(user, limit=4):
     if latest_search and latest_search.max_price is not None:
         services = services.filter(price__lte=latest_search.max_price)
 
+    # Do not recommend services that the user already viewed or saved.
     already_seen_ids = list(
         RecentlyViewedService.objects.filter(user=user).values_list("service_id", flat=True)
     )
@@ -61,6 +68,7 @@ def get_dashboard_recommendations(user, limit=4):
         WishlistItem.objects.filter(user=user).values_list("service_id", flat=True)
     )
 
+    # One service may match several rules, so distinct() removes repeated rows.
     return (
         list(
             services.exclude(id__in=already_seen_ids)

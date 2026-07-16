@@ -1,11 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ service.name }} | ThirdEye{% endblock %}
 
 {% block content %}
 <section class="detail-layout">
     <div class="detail-main">
-        <a class="text-link" href="{% url 'catalogue:service_list' %}">Back to services</a>
+        <a class="text-link detail-back-link" href="{% url 'catalogue:service_list' %}">
+            <svg class="detail-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 12H5"></path>
+                <path d="m11 18-6-6 6-6"></path>
+            </svg>
+            <span>Back to services</span>
+        </a>
         <p class="eyebrow">{{ service.category.name }} / {{ service.subcategory.name }}</p>
         <h1>{{ service.name }}</h1>
         <p class="detail-intro">{{ service.short_description }}</p>
@@ -44,41 +51,47 @@
             {% if service.image %}
                 <img src="{{ service.image.url }}" alt="{{ service.name }}">
             {% else %}
-                <div class="mini-pitch" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
+                <img src="{% static 'images/services/' %}{{ service.slug }}.webp" alt="{{ service.name }}">
             {% endif %}
         </div>
         <p class="price">${{ service.price }}</p>
         <div class="detail-actions">
+            {# The views check login too. Hiding these buttons is only the interface part. #}
             {% if user.is_authenticated %}
                 <form action="{% url 'cart:add_to_cart' service.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit">Add to cart</button>
+                    <button class="detail-action detail-action-primary" type="submit">
+                        <svg class="detail-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6 8h12l-1 11H7L6 8Z"></path>
+                            <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+                        </svg>
+                        <span>Add to cart</span>
+                    </button>
                 </form>
 
                 <form class="wishlist-form" data-url="{% url 'interactions:toggle_wishlist' service.id %}" method="post">
                     {% csrf_token %}
-                    <button id="wishlist-button" type="submit">
-                        {% if in_wishlist %}Remove from wishlist{% else %}Add to wishlist{% endif %}
+                    <button class="detail-action detail-action-secondary {% if in_wishlist %}is-active{% endif %}" id="wishlist-button" type="submit" aria-pressed="{% if in_wishlist %}true{% else %}false{% endif %}">
+                        <svg class="detail-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"></path>
+                        </svg>
+                        <span class="detail-action-label">{% if in_wishlist %}Remove from wishlist{% else %}Add to wishlist{% endif %}</span>
                     </button>
                 </form>
 
                 <div class="rating-panel">
-                    <p>
-                        Average rating:
+                    <p class="rating-summary">
+                        <span>Average rating</span>
                         <strong><span id="average-rating">{{ average_rating }}</span>/5</strong>
-                        (<span id="rating-count">{{ rating_count }}</span>)
+                        <span class="rating-count">(<span id="rating-count">{{ rating_count }}</span>)</span>
                     </p>
-                    <form class="rating-form" data-url="{% url 'interactions:rate_service' service.id %}" method="post">
+                    <form class="rating-form" data-url="{% url 'interactions:rate_service' service.id %}" method="post" role="radiogroup" aria-label="Rate this service">
                         {% csrf_token %}
-                        <button type="button" class="rating-button {% if user_rating.score == 1 %}selected{% endif %}" data-score="1">1</button>
-                        <button type="button" class="rating-button {% if user_rating.score == 2 %}selected{% endif %}" data-score="2">2</button>
-                        <button type="button" class="rating-button {% if user_rating.score == 3 %}selected{% endif %}" data-score="3">3</button>
-                        <button type="button" class="rating-button {% if user_rating.score == 4 %}selected{% endif %}" data-score="4">4</button>
-                        <button type="button" class="rating-button {% if user_rating.score == 5 %}selected{% endif %}" data-score="5">5</button>
+                        <button type="button" class="rating-button {% if user_rating and user_rating.score >= 1 %}selected{% endif %}" data-score="1" role="radio" aria-checked="{% if user_rating and user_rating.score == 1 %}true{% else %}false{% endif %}" aria-label="Rate 1 out of 5" title="1 star">&#9733;</button>
+                        <button type="button" class="rating-button {% if user_rating and user_rating.score >= 2 %}selected{% endif %}" data-score="2" role="radio" aria-checked="{% if user_rating and user_rating.score == 2 %}true{% else %}false{% endif %}" aria-label="Rate 2 out of 5" title="2 stars">&#9733;</button>
+                        <button type="button" class="rating-button {% if user_rating and user_rating.score >= 3 %}selected{% endif %}" data-score="3" role="radio" aria-checked="{% if user_rating and user_rating.score == 3 %}true{% else %}false{% endif %}" aria-label="Rate 3 out of 5" title="3 stars">&#9733;</button>
+                        <button type="button" class="rating-button {% if user_rating and user_rating.score >= 4 %}selected{% endif %}" data-score="4" role="radio" aria-checked="{% if user_rating and user_rating.score == 4 %}true{% else %}false{% endif %}" aria-label="Rate 4 out of 5" title="4 stars">&#9733;</button>
+                        <button type="button" class="rating-button {% if user_rating and user_rating.score >= 5 %}selected{% endif %}" data-score="5" role="radio" aria-checked="{% if user_rating and user_rating.score == 5 %}true{% else %}false{% endif %}" aria-label="Rate 5 out of 5" title="5 stars">&#9733;</button>
                     </form>
                     <p id="rating-message" class="inline-message"></p>
                 </div>
@@ -88,7 +101,13 @@
                 </p>
             {% endif %}
         </div>
-        <a class="button-link" href="{% url 'catalogue:service_list' %}?analysis_type={{ service.analysis_type }}">More {{ service.get_analysis_type_display }} services</a>
+        <a class="button-link detail-related-link" href="{% url 'catalogue:service_list' %}?analysis_type={{ service.analysis_type }}">
+            <span>More {{ service.get_analysis_type_display }} services</span>
+            <svg class="detail-control-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14"></path>
+                <path d="m13 6 6 6-6 6"></path>
+            </svg>
+        </a>
     </aside>
 </section>
 
@@ -99,7 +118,7 @@
     </div>
     <div class="service-grid">
         {% for service in recommended_services %}
-            {% include "catalogue/partials/service_card.html" %}
+            {% include "catalogue/service_card.html" %}
         {% empty %}
             <p>No similar services are available yet.</p>
         {% endfor %}
@@ -108,10 +127,12 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script>
+{# jQuery is loaded only here because this is the only page using AJAX. #}
+<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+<script nonce="{{ csp_nonce }}">
 if (window.jQuery) {
     $(function () {
+        // Save or remove the wishlist row without reloading the whole page.
         $(".wishlist-form").on("submit", function (event) {
             event.preventDefault();
 
@@ -119,10 +140,13 @@ if (window.jQuery) {
             const button = $("#wishlist-button");
 
             $.post(form.data("url"), form.serialize(), function (data) {
-                button.text(data.in_wishlist ? "Remove from wishlist" : "Add to wishlist");
+                button.find(".detail-action-label").text(data.in_wishlist ? "Remove from wishlist" : "Add to wishlist");
+                button.toggleClass("is-active", data.in_wishlist);
+                button.attr("aria-pressed", data.in_wishlist ? "true" : "false");
             });
         });
 
+        // The server returns the new public average after saving this user's score.
         $(".rating-button").on("click", function () {
             const button = $(this);
             const form = button.closest(".rating-form");
@@ -130,8 +154,12 @@ if (window.jQuery) {
             const postData = form.serialize() + "&score=" + score;
 
             $.post(form.data("url"), postData, function (data) {
-                $(".rating-button").removeClass("selected");
-                button.addClass("selected");
+                // A score of 4 highlights stars 1 to 4 but checks only star 4.
+                $(".rating-button").each(function () {
+                    const star = $(this);
+                    star.toggleClass("selected", star.data("score") <= score);
+                    star.attr("aria-checked", star.data("score") === score ? "true" : "false");
+                });
                 $("#average-rating").text(data.average_rating);
                 $("#rating-count").text(data.rating_count);
                 $("#rating-message").text("Your rating has been saved.");

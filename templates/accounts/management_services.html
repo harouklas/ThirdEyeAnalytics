@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{# Staff review services here and open the shared add/edit form. #}
 
 {% block title %}Manage Services | ThirdEye{% endblock %}
 
@@ -6,7 +7,7 @@
 <section class="page-header">
     <p class="eyebrow">Staff dashboard</p>
     <h1>Manage services</h1>
-    <p>Add and edit the ThirdEye service packages shown in the public catalogue.</p>
+    <p>Add, edit, or delete the ThirdEye service packages shown in the public catalogue.</p>
 </section>
 
 <section class="management-toolbar">
@@ -24,18 +25,22 @@
     </div>
     {% for service in services %}
         <div class="management-row">
-            <span>
+            <span data-label="Service">
                 <strong>{{ service.name }}</strong>
                 <small>{{ service.get_analysis_type_display }}</small>
             </span>
-            <span>{{ service.category.name }} / {{ service.subcategory.name }}</span>
-            <span>${{ service.price }}</span>
-            <span>
+            <span data-label="Category">{{ service.category.name }} / {{ service.subcategory.name }}</span>
+            <span data-label="Price">${{ service.price }}</span>
+            <span data-label="Status">
                 {% if service.is_active %}Active{% else %}Hidden{% endif %}
                 {% if service.is_featured %} / Featured{% endif %}
             </span>
-            <span>
-                <a href="{% url 'accounts:management_service_edit' service.id %}">Edit</a>
+            <span data-label="Action">
+                <span class="management-row-actions">
+                    <a href="{% url 'accounts:management_service_edit' service.id %}">Edit</a>
+                    {# Delete opens a confirmation page; only its POST form removes data. #}
+                    <a class="danger-link" href="{% url 'accounts:management_service_delete' service.id %}">Delete</a>
+                </span>
             </span>
         </div>
     {% empty %}

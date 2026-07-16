@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{# Public catalogue page for searching and filtering services. #}
 
 {% block title %}Services | ThirdEye{% endblock %}
 
@@ -9,6 +10,7 @@
     <p>Search and filter ThirdEye packages by football analysis type, price, level, video type, delivery time, and output format.</p>
 </section>
 
+{# GET keeps the filters in the URL so the result can be refreshed or shared. #}
 <section class="catalogue-layout">
     <aside class="filter-panel">
         <h2>Filters</h2>
@@ -88,13 +90,15 @@
         </form>
     </aside>
 
+    {# The view applies valid filters before sending this service list. #}
     <div class="catalogue-results">
         <div class="results-heading">
             <h2>{{ services|length }} service{{ services|length|pluralize }}</h2>
         </div>
         <div class="service-grid">
+            {# This partial keeps service cards the same across the website. #}
             {% for service in services %}
-                {% include "catalogue/partials/service_card.html" %}
+                {% include "catalogue/service_card.html" %}
             {% empty %}
                 <div class="empty-state">
                     <h3>No services found</h3>

@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{# Staff landing page with totals and links to each management area. #}
 
 {% block title %}Management | ThirdEye{% endblock %}
 
 {% block content %}
 <section class="page-header">
-    <p class="eyebrow">Staff dashboard</p>
+    <p class="eyebrow">Administrator dashboard</p>
     <h1>Management</h1>
-    <p>This is the in-website staff dashboard. Django Admin is separate and can be opened manually at /django-admin/.</p>
+    <p>Manage ThirdEye services, categories, and users from one place. Head Administrators also have access to advanced controls below.</p>
 </section>
 
 <section class="management-grid">
@@ -35,17 +36,54 @@
 <section class="management-actions">
     <a href="{% url 'accounts:management_services' %}">
         <span>Manage services</span>
-        <small>Add, edit, activate, or feature catalogue services.</small>
+                <small>Add, edit, delete, activate, or feature catalogue services.</small>
     </a>
     <a href="{% url 'accounts:management_categories' %}">
         <span>Manage categories</span>
-        <small>Add categories and sub-categories for browsing.</small>
+                <small>Add, edit, or delete categories and sub-categories.</small>
     </a>
     <a href="{% url 'accounts:management_users' %}">
-        <span>View users</span>
-        <small>Review registered users and staff roles.</small>
+        <span>Manage users</span>
+        <small>Review access roles. Head Administrators can change them.</small>
     </a>
 </section>
+
+{% if user.is_superuser %}
+{# Django Admin has its own Head Administrator check as well. #}
+<section class="head-admin-panel" aria-labelledby="head-admin-title">
+    <div class="head-admin-intro">
+        <p class="eyebrow">Head Administrator only</p>
+        <h2 id="head-admin-title">Advanced administration</h2>
+        <p>Use Django Admin for complete record management, detailed filters, and account permissions.</p>
+        <a class="button-link head-admin-launch" href="{% url 'admin:index' %}">
+            <span>Open Django Admin</span>
+            <svg class="head-admin-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14"></path>
+                <path d="m13 6 6 6-6 6"></path>
+            </svg>
+        </a>
+    </div>
+
+    <nav class="head-admin-shortcuts" aria-label="Django administration shortcuts">
+        <a href="{% url 'admin:auth_user_changelist' %}">
+            <span>Users</span>
+            <small>Accounts, permissions, and access flags</small>
+        </a>
+        <a href="{% url 'admin:catalogue_service_changelist' %}">
+            <span>Services</span>
+            <small>Complete catalogue records and filters</small>
+        </a>
+        <a href="{% url 'admin:cart_order_changelist' %}">
+            <span>Orders</span>
+            <small>Order details, billing data, and items</small>
+        </a>
+        <a href="{% url 'admin:interactions_rating_changelist' %}">
+            <span>Ratings</span>
+            <small>User scores, comments, and timestamps</small>
+        </a>
+    </nav>
+</section>
+{% endif %}
 
 <section class="dashboard-layout">
     <article class="dashboard-panel">

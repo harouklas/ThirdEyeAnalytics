@@ -1,6 +1,8 @@
 """
 WSGI config for config project.
 
+Used by WSGI-compatible deployment servers if the project is deployed that way.
+
 It exposes the WSGI callable as a module-level variable named ``application``.
 
 For more information on this file, see

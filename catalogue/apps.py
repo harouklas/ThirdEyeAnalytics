@@ -1,3 +1,5 @@
+"""Application configuration for the catalogue app."""
+
 from django.apps import AppConfig
 
 

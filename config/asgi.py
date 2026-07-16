@@ -1,6 +1,8 @@
 """
 ASGI config for config project.
 
+Used by ASGI-compatible deployment servers if the project is deployed that way.
+
 It exposes the ASGI callable as a module-level variable named ``application``.
 
 For more information on this file, see

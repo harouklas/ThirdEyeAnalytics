@@ -1,3 +1,5 @@
+"""Views for searching, filtering, and viewing catalogue services."""
+
 from decimal import Decimal, InvalidOperation
 
 from django.db.models import Avg, Q
@@ -7,34 +9,76 @@ from interactions.models import Rating, RecentlyViewedService, SearchHistory, Wi
 
 from .models import Category, Service, SubCategory
 
+MAX_SERVICE_PRICE = Decimal("999999.99")
+
+
+def valid_choice(value, choices):
+    """Return only values that exist in one of the model's choice lists."""
+    allowed_values = {choice_value for choice_value, _label in choices}
+    return value if value in allowed_values else ""
+
+
+def valid_price(value):
+    """Convert a short, positive price string or return no filter value."""
+    value = value.strip()[:20]
+    if not value:
+        return "", None
+
+    try:
+        decimal_value = Decimal(value)
+    except InvalidOperation:
+        return "", None
+
+    if not decimal_value.is_finite() or not 0 <= decimal_value <= MAX_SERVICE_PRICE:
+        return "", None
+
+    return value, decimal_value
+
 
 def service_list(request):
+    # select_related avoids another database query for each service card.
     services = (
         Service.objects.filter(is_active=True)
         .select_related("category", "subcategory")
         .order_by("name")
     )
 
-    query = request.GET.get("q", "").strip()
-    category_slug = request.GET.get("category", "")
-    subcategory_slug = request.GET.get("subcategory", "")
-    analysis_type = request.GET.get("analysis_type", "")
-    skill_level = request.GET.get("skill_level", "")
-    video_type = request.GET.get("video_type", "")
-    delivery_time = request.GET.get("delivery_time", "")
-    output_format = request.GET.get("output_format", "")
-    min_price = request.GET.get("min_price", "").strip()
-    max_price = request.GET.get("max_price", "").strip()
-    min_price_value = None
-    max_price_value = None
+    # GET values come from the search and filter controls in the catalogue page.
+    query = request.GET.get("q", "").strip()[:150]
+    category_slug = request.GET.get("category", "")[:120]
+    subcategory_slug = request.GET.get("subcategory", "")[:120]
+    analysis_type = valid_choice(
+        request.GET.get("analysis_type", "")[:80],
+        Service.AnalysisType.choices,
+    )
+    skill_level = valid_choice(
+        request.GET.get("skill_level", "")[:30],
+        Service.SkillLevel.choices,
+    )
+    video_type = valid_choice(
+        request.GET.get("video_type", "")[:30],
+        Service.VideoType.choices,
+    )
+    delivery_time = valid_choice(
+        request.GET.get("delivery_time", "")[:30],
+        Service.DeliveryTime.choices,
+    )
+    output_format = valid_choice(
+        request.GET.get("output_format", "")[:30],
+        Service.OutputFormat.choices,
+    )
+    min_price, min_price_value = valid_price(request.GET.get("min_price", ""))
+    max_price, max_price_value = valid_price(request.GET.get("max_price", ""))
 
     if query:
+        # A text search can match the name or either description field.
         services = services.filter(
             Q(name__icontains=query)
             | Q(short_description__icontains=query)
             | Q(description__icontains=query)
         )
 
+    # Each value that was actually selected narrows the same result list.
     if category_slug:
         services = services.filter(category__slug=category_slug)
 
@@ -56,19 +100,12 @@ def service_list(request):
     if output_format:
         services = services.filter(output_format=output_format)
 
-    if min_price:
-        try:
-            min_price_value = Decimal(min_price)
-            services = services.filter(price__gte=min_price_value)
-        except InvalidOperation:
-            pass
+    if min_price_value is not None:
+        # Price is a Decimal in the model, so do not compare it with a float.
+        services = services.filter(price__gte=min_price_value)
 
-    if max_price:
-        try:
-            max_price_value = Decimal(max_price)
-            services = services.filter(price__lte=max_price_value)
-        except InvalidOperation:
-            pass
+    if max_price_value is not None:
+        services = services.filter(price__lte=max_price_value)
 
     has_search_criteria = any(
         [
@@ -80,6 +117,7 @@ def service_list(request):
     )
 
     if request.user.is_authenticated and has_search_criteria:
+        # Save useful search criteria so the dashboard can recommend related services.
         SearchHistory.objects.create(
             user=request.user,
             query=query,
@@ -114,6 +152,7 @@ def service_list(request):
 
 
 def service_detail(request, slug):
+    # Only active services can be opened from the public website.
     service = get_object_or_404(
         Service.objects.select_related("category", "subcategory"),
         slug=slug,
@@ -124,6 +163,7 @@ def service_detail(request, slug):
     in_wishlist = False
 
     if request.user.is_authenticated:
+        # Opening the same service again updates its viewed time instead of adding duplicates.
         RecentlyViewedService.objects.update_or_create(
             user=request.user,
             service=service,
@@ -134,10 +174,12 @@ def service_detail(request, slug):
             service=service,
         ).exists()
 
+    # Calculate the public rating summary from every user's rating for this service.
     rating_summary = service.ratings.aggregate(average=Avg("score"))
     average_rating = rating_summary["average"] or 0
     rating_count = service.ratings.count()
 
+    # The detail page uses a simple same-category recommendation.
     recommended_services = (
         Service.objects.filter(
             is_active=True,

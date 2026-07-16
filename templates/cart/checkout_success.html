@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{# The order lookup includes request.user so another user cannot open it. #}
 
 {% block title %}Checkout Complete | ThirdEye{% endblock %}
 
@@ -9,6 +10,7 @@
     <p>Order #{{ order.id }} has been saved as a simulated purchase.</p>
 </section>
 
+{# This saved name and price stay the same if the catalogue changes later. #}
 <section class="cart-layout">
     <div class="cart-panel">
         {% for item in order.items.all %}
@@ -30,6 +32,16 @@
         <h2>Order summary</h2>
         <p class="price">${{ order.total_price }}</p>
         <p>Status: {{ order.get_status_display }}</p>
+        <div class="billing-summary">
+            <h3>Billing details</h3>
+            <p><strong>{{ order.full_name }}</strong></p>
+            {% if order.organization %}<p>{{ order.organization }}</p>{% endif %}
+            <p>{{ order.billing_email }}</p>
+            <p>{{ order.billing_address }}</p>
+            <p>{{ order.postal_code }} {{ order.city }}</p>
+            <p>{{ order.country }}</p>
+            {% if order.vat_number %}<p>VAT: {{ order.vat_number }}</p>{% endif %}
+        </div>
         <a class="button-link" href="{% url 'accounts:dashboard' %}">View dashboard</a>
     </aside>
 </section>

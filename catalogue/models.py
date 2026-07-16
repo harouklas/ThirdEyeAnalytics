@@ -1,3 +1,5 @@
+"""Database models for the ThirdEye service catalogue."""
+
 from django.db import models
 
 
@@ -7,6 +9,7 @@ class Category(models.Model):
     description = models.TextField(blank=True)
 
     class Meta:
+        # Correct Django's automatic plural and keep category lists alphabetical.
         verbose_name_plural = "categories"
         ordering = ["name"]
 
@@ -15,6 +18,7 @@ class Category(models.Model):
 
 
 class SubCategory(models.Model):
+    # A sub-category belongs to one category and is reached with category.subcategories.
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
@@ -27,6 +31,7 @@ class SubCategory(models.Model):
     class Meta:
         verbose_name_plural = "sub-categories"
         ordering = ["category__name", "name"]
+        # The same slug may exist elsewhere, but not twice inside one category.
         constraints = [
             models.UniqueConstraint(
                 fields=["category", "slug"],
@@ -39,6 +44,7 @@ class SubCategory(models.Model):
 
 
 class Service(models.Model):
+    # Choice classes keep filter values consistent and provide readable labels.
     class AnalysisType(models.TextChoices):
         TRACKING = "tracking", "Tracking"
         HEATMAP = "heatmap", "Heatmap"
@@ -71,6 +77,7 @@ class Service(models.Model):
         VIDEO_OVERLAY = "video_overlay", "Video Overlay"
         CSV_DATA = "csv_data", "CSV Data"
 
+    # PROTECT stops staff from deleting catalogue groups that a service still uses.
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
@@ -92,11 +99,13 @@ class Service(models.Model):
     output_format = models.CharField(max_length=30, choices=OutputFormat.choices)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     image = models.ImageField(upload_to="services/", blank=True, null=True)
+    # Inactive services are hidden; featured services can appear on the home page.
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # Services are grouped by category and then ordered by name.
         ordering = ["category__name", "name"]
 
     def __str__(self):

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{# The object is deleted only when this confirmation form sends a POST request. #}
+
+{% block title %}{{ page_title }} | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>{{ page_title }}</h1>
+    <p>Check the item before confirming this action.</p>
+</section>
+
+<section class="auth-page compact">
+    <div class="auth-card delete-card">
+        <h2>Delete {{ object_name }}?</h2>
+        <p>You are about to delete this {{ object_type }}.</p>
+        <p class="delete-warning">{{ warning }}</p>
+
+        {# CSRF and POST prevent a normal link or outside website from deleting it. #}
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            <button class="danger-button" type="submit">Yes, delete {{ object_type }}</button>
+            <a class="text-link" href="{% url cancel_url %}">Cancel</a>
+        </form>
+    </div>
+</section>
+{% endblock %}

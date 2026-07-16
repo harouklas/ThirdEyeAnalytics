@@ -1,14 +1,16 @@
 {% extends "base.html" %}
+{# Public home page with search, categories and featured services. #}
 
 {% block title %}ThirdEye | Sports Analytics{% endblock %}
 
 {% block content %}
+{# Search sends q to the catalogue, where the view checks and applies it. #}
 <section class="hero">
     <div class="hero-content">
         <p class="eyebrow">Computer vision for football analysis</p>
         <h1>ThirdEye</h1>
         <p class="hero-copy">
-            Browse football analytics services for coaches, academies, scouts, and analysts.
+            Turn match footage into clear tactical, player, and scouting insights for coaches, academies, and analysts.
         </p>
         <form class="hero-search" action="{% url 'catalogue:service_list' %}" method="get">
             <label for="home-search">Search services</label>
@@ -18,19 +20,9 @@
             </div>
         </form>
     </div>
-    <div class="analysis-visual" aria-hidden="true">
-        <div class="pitch-line halfway"></div>
-        <div class="pitch-box left-box"></div>
-        <div class="pitch-box right-box"></div>
-        <span class="player-dot dot-a"></span>
-        <span class="player-dot dot-b"></span>
-        <span class="player-dot dot-c"></span>
-        <span class="player-dot dot-d"></span>
-        <span class="tracking-line line-a"></span>
-        <span class="tracking-line line-b"></span>
-    </div>
 </section>
 
+{# Each category slug opens the catalogue with that filter already selected. #}
 <section class="section">
     <div class="section-heading">
         <p class="eyebrow">Catalogue</p>
@@ -49,6 +41,7 @@
     </div>
 </section>
 
+{# Only active services marked as featured are sent to this section. #}
 <section class="section section-muted">
     <div class="section-heading">
         <p class="eyebrow">Featured</p>
@@ -56,7 +49,7 @@
     </div>
     <div class="service-grid">
         {% for service in featured_services %}
-            {% include "catalogue/partials/service_card.html" %}
+            {% include "catalogue/service_card.html" %}
         {% empty %}
             <p>No featured services have been added yet.</p>
         {% endfor %}

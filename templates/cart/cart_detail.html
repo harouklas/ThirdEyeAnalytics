@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{# The view sends only CartItems owned by the logged-in user. #}
 
 {% block title %}Cart | ThirdEye{% endblock %}
 
@@ -40,10 +41,7 @@
         <h2>Summary</h2>
         <p class="price">${{ cart.total_price }}</p>
         {% if items %}
-            <form action="{% url 'cart:checkout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Simulate checkout</button>
-            </form>
+            <a class="button-link" href="{% url 'cart:checkout' %}">Continue to billing</a>
         {% else %}
             <a class="button-link" href="{% url 'catalogue:service_list' %}">Find services</a>
         {% endif %}

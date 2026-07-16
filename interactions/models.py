@@ -1,3 +1,5 @@
+"""Database models that store user activity and feedback."""
+
 from django.conf import settings
 from django.db import models
 
@@ -5,6 +7,7 @@ from catalogue.models import Service
 
 
 class Rating(models.Model):
+    # IntegerChoices limits ratings to the five values shown by the rating buttons.
     class Score(models.IntegerChoices):
         ONE = 1, "1 star"
         TWO = 2, "2 stars"
@@ -29,6 +32,7 @@ class Rating(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        # A user can change a rating, but cannot own two ratings for one service.
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "service"],
@@ -41,6 +45,7 @@ class Rating(models.Model):
 
 
 class WishlistItem(models.Model):
+    # A wishlist row connects one user with one saved service.
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -55,6 +60,7 @@ class WishlistItem(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        # One saved row is enough to show that a service is in the wishlist.
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "service"],
@@ -67,6 +73,7 @@ class WishlistItem(models.Model):
 
 
 class RecentlyViewedService(models.Model):
+    # update_or_create in the view keeps one latest view time per user and service.
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -81,6 +88,7 @@ class RecentlyViewedService(models.Model):
 
     class Meta:
         ordering = ["-viewed_at"]
+        # Reopening a service updates the existing recent-view row.
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "service"],
@@ -93,6 +101,7 @@ class RecentlyViewedService(models.Model):
 
 
 class SearchHistory(models.Model):
+    # User can be empty so the model can also represent a public search if needed.
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -107,6 +116,7 @@ class SearchHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # first() returns the latest search because newest records come first.
         verbose_name_plural = "search histories"
         ordering = ["-created_at"]
 

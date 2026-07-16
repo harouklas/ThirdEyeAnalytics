@@ -1,3 +1,5 @@
+"""Command that creates sample ThirdEye categories, sub-categories, and services."""
+
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand
@@ -9,6 +11,7 @@ class Command(BaseCommand):
     help = "Add sample ThirdEye categories, sub-categories, and services."
 
     def handle(self, *args, **options):
+        # Keep each category together with the sub-categories that belong to it.
         categories = [
             {
                 "name": "Match Analysis",
@@ -56,6 +59,7 @@ class Command(BaseCommand):
             },
         ]
 
+        # update_or_create lets us run this command again without creating duplicates.
         for category_data in categories:
             category, _created = Category.objects.update_or_create(
                 slug=category_data["slug"],
@@ -72,6 +76,7 @@ class Command(BaseCommand):
                     defaults={"name": subcategory_name},
                 )
 
+        # These sample services give the catalogue useful data for the demonstration.
         service_data = [
             {
                 "name": "Full Match Tactical Report",
@@ -255,6 +260,7 @@ class Command(BaseCommand):
             },
         ]
 
+        # Look up each service's category records before saving the service itself.
         for item in service_data:
             category = Category.objects.get(slug=item["category"])
             subcategory = SubCategory.objects.get(

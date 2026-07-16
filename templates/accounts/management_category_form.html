@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{# Category and sub-category editing use the same simple ModelForm layout. #}
+
+{% block title %}{{ page_title }} | ThirdEye{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <p class="eyebrow">Staff dashboard</p>
+    <h1>{{ page_title }}</h1>
+    <p>Update this {{ item_type }}. Leave the slug blank to create it from the name.</p>
+</section>
+
+<section class="auth-page compact">
+    <div class="auth-card wide">
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="field-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit">Save changes</button>
+            <a class="text-link" href="{% url 'accounts:management_categories' %}">Back to categories</a>
+        </form>
+    </div>
+</section>
+{% endblock %}

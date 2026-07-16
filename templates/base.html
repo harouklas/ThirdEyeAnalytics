@@ -1,22 +1,31 @@
 {% load static %}
+{# Every page extends this file so the header, messages and footer stay the same. #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ThirdEye{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {# Load this before the CSS so the saved theme does not flash back to light. #}
+    <script src="{% static 'js/theme.js' %}?v=20260713-theme"></script>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20260716-management-layout">
 </head>
 <body>
+    {# Shared navigation changes its links depending on the current user. #}
     <header class="site-header">
         <nav class="site-nav" aria-label="Main navigation">
-            <a class="brand" href="{% url 'home' %}">ThirdEye</a>
+            <a class="brand" href="{% url 'home' %}" aria-label="ThirdEye home">
+                <img class="site-logo" src="{% static 'images/brand/thirdeye-logo.png' %}" alt="ThirdEye">
+            </a>
+
             <div class="nav-links">
                 <a href="{% url 'home' %}">Home</a>
                 <a href="{% url 'catalogue:service_list' %}">Services</a>
+
+                {# Members get account links; visitors get login and register links. #}
                 {% if user.is_authenticated %}
                     <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
-                    <a href="{% url 'cart:cart_detail' %}">Cart</a>
+                    {# The management views check is_staff again before allowing access. #}
                     {% if user.is_staff %}
                         <a href="{% url 'accounts:management_dashboard' %}">Management</a>
                     {% endif %}
@@ -24,15 +33,30 @@
                         {% csrf_token %}
                         <button type="submit">Logout</button>
                     </form>
+                    <a class="cart-nav-link nav-icon-control" href="{% url 'cart:cart_detail' %}" aria-label="View cart" title="View cart">
+                        <span aria-hidden="true">&#128722;</span>
+                    </a>
                 {% else %}
                     <a href="{% url 'accounts:login' %}">Login</a>
-                    <a href="{% url 'accounts:register' %}">Register</a>
+                    <a class="nav-cta" href="{% url 'accounts:register' %}">Register</a>
                 {% endif %}
+
+                {# theme.js updates this button and remembers the selected theme. #}
+                <button class="theme-toggle nav-icon-control" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
+                    <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path>
+                    </svg>
+                    <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M20.4 14.8A8.5 8.5 0 0 1 9.2 3.6 8.5 8.5 0 1 0 20.4 14.8Z"></path>
+                    </svg>
+                </button>
             </div>
         </nav>
     </header>
 
     <main>
+        {# Django messages show feedback after actions such as login or checkout. #}
         {% if messages %}
             <div class="message-list">
                 {% for message in messages %}
@@ -40,12 +64,35 @@
                 {% endfor %}
             </div>
         {% endif %}
+        {# Each page replaces this block with its own main content. #}
         {% block content %}{% endblock %}
     </main>
 
+    {# Footer links also change depending on whether the visitor is logged in. #}
     <footer class="site-footer">
-        <p>ThirdEye Sports Analytics Platform</p>
+        <div class="footer-inner">
+            <div>
+                <a class="brand footer-brand" href="{% url 'home' %}" aria-label="ThirdEye home">
+                    <img class="site-logo footer-logo" src="{% static 'images/brand/thirdeye-logo.png' %}" alt="ThirdEye">
+                </a>
+                <p>Practical football analysis for teams, coaches, and scouts.</p>
+            </div>
+            <nav class="footer-links" aria-label="Footer navigation">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'catalogue:service_list' %}">Services</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                {% endif %}
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ThirdEye Sports Analytics</p>
+            <p>Coursework demonstration platform</p>
+        </div>
     </footer>
+    {# A page can add scripts here without changing the shared layout. #}
     {% block scripts %}{% endblock %}
 </body>
 </html>
