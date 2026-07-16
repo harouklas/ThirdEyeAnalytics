@@ -75,6 +75,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py seed_catalogue
+.\.venv\Scripts\python.exe manage.py seed_demo_users
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
@@ -98,7 +99,8 @@ If the virtual environment and database are already set up, I only need:
 
 ## Demo accounts
 
-The local database has these accounts for testing:
+The database is not uploaded to GitHub. After downloading the project, the
+`seed_demo_users` command creates these local accounts for testing:
 
 ```text
 Head Administrator: headadmin / HeadAdmin123!
@@ -106,8 +108,12 @@ Administrator: administrator / Admin12345!
 User: user / User12345!
 ```
 
-The database file is not uploaded to GitHub. On a new setup, a superuser can be
-created with:
+The command can be run again without creating duplicates. It resets these three
+accounts so their passwords and permissions still match this section. It only
+runs while `DJANGO_DEBUG` is `True`, because these public passwords must not be
+used on the deployed website.
+
+For deployment, create a separate Head Administrator with a private password:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py createsuperuser

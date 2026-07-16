@@ -1,7 +1,11 @@
 """Tests for registration, dashboards, roles, and management permissions."""
 
+from io import StringIO
+
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from cart.models import Order, OrderItem
@@ -264,6 +268,86 @@ class DashboardProductRatingsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context["user_ratings"]), [])
         self.assertContains(response, "No product ratings yet.")
+
+
+@override_settings(DEBUG=True)
+class SeedDemoUsersCommandTests(TestCase):
+    """The downloaded project can create its documented local demo accounts."""
+
+    def run_command(self):
+        # Capture the text so command output does not make the test results noisy.
+        output = StringIO()
+        call_command("seed_demo_users", stdout=output)
+        return output.getvalue()
+
+    def test_command_creates_the_three_accounts_with_the_correct_access(self):
+        output = self.run_command()
+
+        expected_accounts = {
+            "headadmin": {
+                "password": "HeadAdmin123!",
+                "full_name": "Head Administrator",
+                "role": Profile.UserRole.HEAD_ADMINISTRATOR,
+                "is_staff": True,
+                "is_superuser": True,
+            },
+            "administrator": {
+                "password": "Admin12345!",
+                "full_name": "Administrator",
+                "role": Profile.UserRole.ADMINISTRATOR,
+                "is_staff": True,
+                "is_superuser": False,
+            },
+            "user": {
+                "password": "User12345!",
+                "full_name": "Demo User",
+                "role": Profile.UserRole.USER,
+                "is_staff": False,
+                "is_superuser": False,
+            },
+        }
+
+        self.assertEqual(User.objects.count(), 3)
+        for username, expected in expected_accounts.items():
+            with self.subTest(username=username):
+                user = User.objects.select_related("profile").get(username=username)
+                self.assertTrue(user.check_password(expected["password"]))
+                self.assertTrue(user.is_active)
+                self.assertEqual(user.is_staff, expected["is_staff"])
+                self.assertEqual(user.is_superuser, expected["is_superuser"])
+                self.assertEqual(user.profile.full_name, expected["full_name"])
+                self.assertEqual(user.profile.role, expected["role"])
+
+        self.assertIn("The three local demonstration accounts are ready.", output)
+
+    def test_running_the_command_again_resets_accounts_without_duplicates(self):
+        self.run_command()
+        administrator = User.objects.get(username="administrator")
+        administrator.is_staff = False
+        administrator.set_password("ChangedPassword9!")
+        administrator.save()
+        administrator.profile.role = Profile.UserRole.USER
+        administrator.profile.save(update_fields=["role"])
+
+        output = self.run_command()
+
+        administrator.refresh_from_db()
+        administrator.profile.refresh_from_db()
+        self.assertEqual(User.objects.count(), 3)
+        self.assertTrue(administrator.check_password("Admin12345!"))
+        self.assertTrue(administrator.is_staff)
+        self.assertEqual(
+            administrator.profile.role,
+            Profile.UserRole.ADMINISTRATOR,
+        )
+        self.assertIn("administrator: reset", output)
+
+    @override_settings(DEBUG=False)
+    def test_command_refuses_to_create_public_production_passwords(self):
+        with self.assertRaisesMessage(CommandError, "only runs locally"):
+            call_command("seed_demo_users")
+
+        self.assertFalse(User.objects.exists())
 
 
 class RoleSecurityTests(TestCase):
