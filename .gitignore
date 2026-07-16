@@ -13,7 +13,7 @@ env/
 
 # Django
 *.log
-db.sqlite3
+db.sqlite3*
 media/
 staticfiles/
 
@@ -25,6 +25,10 @@ staticfiles/
 .vs/
 .vscode/
 .idea/
+
+# Local coding tools
+.agents/
+.codex/
 
 # OS files
 .DS_Store

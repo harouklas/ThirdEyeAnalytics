@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ThirdEye{% endblock %}</title>
+    {# Use the project logo in the browser tab instead of a missing favicon file. #}
+    <link rel="icon" type="image/png" href="{% static 'images/brand/thirdeye-logo.png' %}">
     {# Load this before the CSS so the saved theme does not flash back to light. #}
     <script src="{% static 'js/theme.js' %}?v=20260713-theme"></script>
     <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20260716-management-layout">

@@ -113,10 +113,12 @@ accounts so their passwords and permissions still match this section. It only
 runs while `DJANGO_DEBUG` is `True`, because these public passwords must not be
 used on the deployed website.
 
-For deployment, create a separate Head Administrator with a private password:
+For the deployed website, create a separate Head Administrator with a private
+password. Run this from the server project folder after its virtual environment
+and production settings are active:
 
-```powershell
-.\.venv\Scripts\python.exe manage.py createsuperuser
+```bash
+python manage.py createsuperuser
 ```
 
 ## Testing
@@ -151,7 +153,10 @@ handwritten project code.
 
 https://github.com/harouklas/ThirdEyeAnalytics
 
-## Links to add before submission
+## Deployment
 
-- Deployment: not added yet
-- Demonstration video: not added yet
+https://charischaliotis.pythonanywhere.com/
+
+## Demonstration video
+
+Not added yet.
