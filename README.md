@@ -65,6 +65,7 @@ website.
 - Services saved in an order cannot be deleted, so old order details stay valid.
 - The Content Security Policy only allows the scripts and files used by this
   website.
+- Penentration Testing was implemented using gpt-5.6-sol (ultra) and found no vulnerabilities.
 
 ## Download and run the website from GitHub
 
@@ -293,4 +294,5 @@ https://charischaliotis.pythonanywhere.com/
 
 ## Demonstration video
 
-Not added yet.
+https://youtu.be/e-lOXdlTcsc
+
